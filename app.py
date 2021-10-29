@@ -7,7 +7,6 @@ from flask import url_for,escape
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
-db = SQLAlchemy(app) 
 
 WIN = sys.platform.startswith('win')
 if WIN:  # 如果是 Windows 系统，使用三个斜线
@@ -16,6 +15,7 @@ else:  # 否则使用四个斜线
     prefix = 'sqlite:////'
 app.config['SQLALCHEMY_DATABASE_URI'] = prefix + os.path.join(app.root_path, 'data.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 关闭对模型修改的监控
+db = SQLAlchemy(app) 
 
 @app.cli.command()
 @click.option('--drop', is_flag=True, help='Create after drop.')  # 设置选项
@@ -63,12 +63,15 @@ class Movie(db.Model):  # 表名将会是 movie
     title = db.Column(db.String(60))  # 电影标题
     year = db.Column(db.String(4))  # 电影年份
 
+@app.context_processor
+def inject_user():
+    user = User.query.first()
+    return dict(user=user)
+
 @app.route('/')
 def index():
-    user = User.query.first()
     movies = Movie.query.all()
-    name = user.name
-    return render_template('index.html', name=name, movies=movies)
+    return render_template('index.html', movies=movies)
 
 @app.route('/home')
 def home():
@@ -89,3 +92,7 @@ def test_url_for():
     # 下面这个调用传入了多余的关键字参数，它们会被作为查询字符串附加到 URL 后面。
     print(url_for('test_url_for', num=2))  # 输出：/test?num=2
     return 'Test page'
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
