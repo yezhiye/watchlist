@@ -9,16 +9,12 @@ from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
 db = SQLAlchemy(app) 
 
-"""
 WIN = sys.platform.startswith('win')
 if WIN:  # 如果是 Windows 系统，使用三个斜线
     prefix = 'sqlite:///'
 else:  # 否则使用四个斜线
     prefix = 'sqlite:////'
 app.config['SQLALCHEMY_DATABASE_URI'] = prefix + os.path.join(app.root_path, 'data.db')
-"""
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(app.root_path, 'data.db')
-print(app.config['SQLALCHEMY_DATABASE_URI'])
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 关闭对模型修改的监控
 
 @app.cli.command()
